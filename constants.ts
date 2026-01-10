@@ -1,14 +1,9 @@
 
 import { DrinkItem, OpeningHour, Promo } from './types';
 
-/**
- * CONFIGURACIÓN DEL MENÚ
- * Puedes editar los precios y nombres aquí. 
- * El formato de precio es libre (ej: "$6.000" o "6K").
- */
 export const MENU_ITEMS: DrinkItem[] = [
   // COPAS/VASOS
-  { id: 'cv1', name: 'Gin tonic', description: 'Neutro, Frutos Rojos, Naranja', price: '$6.000', category: 'COPAS/VASOS' },
+  { id: 'cv1', name: 'Gin Tonic', description: 'Neutro, Frutos Rojos, Naranja', price: '$6.000', category: 'COPAS/VASOS' },
   { id: 'cv2', name: 'Aperol Spritz', description: 'Clásico con rodaja de naranja y soda', price: '$6.500', category: 'COPAS/VASOS' },
   { id: 'cv3', name: 'Fernet + Coca', description: 'Medida Fernet + Botella coca', price: '$7.000', category: 'COPAS/VASOS' },
   { id: 'cv4', name: 'Smirnoff + Speed', description: 'Frutos Rojos, Citric, Tropical', price: '$6.000', category: 'COPAS/VASOS' },
@@ -18,9 +13,10 @@ export const MENU_ITEMS: DrinkItem[] = [
   { id: 'cv8', name: 'Vermut + Soda', description: 'El clásico de siempre', price: '$4.000', category: 'COPAS/VASOS' },
 
   // JARRAS
-  { id: 'j1', name: 'smirnoff + speed', description: 'Frutos rojos, citric, tropical', price: '$10.000', category: 'JARRAS' },
-  { id: 'j2', name: 'Absolut + Speed', description: 'Consultar variedades disponibles', price: '$14.500', category: 'JARRAS' },
-  { id: 'j3', name: 'Fernet + Coca', description: 'Para compartir entre amigos', price: '$11.000', category: 'JARRAS' },
+  { id: 'j1', name: 'Smirnoff + speed', description: 'Frutos rojos, citric, tropical', price: '$10.000', category: 'JARRAS' },
+  { id: 'j2', name: 'Fernet + Coca', description: 'Para compartir entre amigos', price: '$11.000', category: 'JARRAS' },
+  { id: 'j3', name: 'Absolut + Speed', description: 'Consultar variedades disponibles', price: '$14.500', category: 'JARRAS' },
+
 
   // CERVEZAS
   { id: 'c1', name: 'Corona 330cc', description: 'Cerveza rubia suave premium', price: '$6.500', category: 'CERVEZAS' },
