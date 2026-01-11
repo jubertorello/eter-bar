@@ -56,9 +56,9 @@ export const PROMOS: Promo[] = [
     highlight: true 
   },
   { 
-    title: 'PROMO SÁBADO', 
+    title: 'PROMO SÁBADO 10/01', 
     description: '2x1 FERNET & VERMUT', 
-    day: 'HOY SÁBADO - HASTA LAS 2AM',
+    day: 'HASTA LAS 1:30AM',
     highlight: true 
   }
 ];
