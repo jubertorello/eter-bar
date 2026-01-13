@@ -135,7 +135,7 @@ const App: React.FC = () => {
                 <h2 className="font-syncopate text-3xl md:text-4xl font-bold uppercase tracking-tighter">Tu evento en ETER</h2>
               </div>
               <p className="text-gray-300 text-lg md:text-xl leading-relaxed font-light">
-                ¿Buscás un lugar exclusivo para tu próximo festejo? Alquilamos nuestro local para <span className="text-red-600 font-bold uppercase">cumpleaños, fiestas privadas, eventos corporativos</span> y celebraciones especiales.
+                ¿Buscás un lugar exclusivo para tu próximo festejo? Alquilamos nuestro local para <span className="text-red-600 font-bold uppercase">cumpleaños, fiestas privadas, eventos</span> y celebraciones especiales.
               </p>
               <ul className="space-y-4 text-gray-400 font-medium uppercase tracking-widest text-sm">
                 <li className="flex items-center gap-3">
