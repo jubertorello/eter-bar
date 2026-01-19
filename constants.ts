@@ -5,8 +5,8 @@ export const MENU_ITEMS: DrinkItem[] = [
   // COPAS/VASOS
   { id: 'cv1', name: 'Gin Tonic', description: 'Neutro, Frutos Rojos, Naranja', price: '$6.000', category: 'COPAS/VASOS' },
   { id: 'cv2', name: 'Aperol Spritz', description: 'Clásico con rodaja de naranja y soda', price: '$6.500', category: 'COPAS/VASOS' },
-  { id: 'cv3', name: 'Fernet + Coca', description: 'Medida Fernet + Botella coca', price: '$6.5000', category: 'COPAS/VASOS' },
-  { id: 'cv4', name: 'Fernet solo', description: 'Medida Fernet', price: '$3.5000', category: 'COPAS/VASOS' },
+  { id: 'cv3', name: 'Fernet + Coca', description: 'Medida Fernet + Botella coca', price: '$6.500', category: 'COPAS/VASOS' },
+  { id: 'cv4', name: 'Fernet solo', description: 'Medida Fernet', price: '$3.500', category: 'COPAS/VASOS' },
   { id: 'cv5', name: 'Smirnoff + Speed', description: 'Frutos Rojos, Citric, Tropical', price: '$6.000', category: 'COPAS/VASOS' },
   { id: 'cv6', name: 'Absolut + Speed', description: 'Vodka premium con energizante', price: '$9.500', category: 'COPAS/VASOS' },
   { id: 'cv7', name: 'Jagger + Speed', description: 'Jägermeister con energizante', price: '$9.000', category: 'COPAS/VASOS' },
@@ -14,7 +14,8 @@ export const MENU_ITEMS: DrinkItem[] = [
   { id: 'cv9', name: 'Mojito Frutos rojos', description: 'Ron Malibu, menta y limón + frutos rojos', price: '$6.500', category: 'COPAS/VASOS' },
   { id: 'cv10', name: 'Vermut + Soda', description: 'El clásico de siempre', price: '$4.000', category: 'COPAS/VASOS' },
   { id: 'cv11', name: 'Negroni', description: 'Campari, Vermut, Gin y rodaja de naranja', price: '$5.000', category: 'COPAS/VASOS' },
-  { id: 'cv12', name: 'Moscow Mule', description: 'Dos trago y sabes que me pongo bellaco', price: 'PRÓXIMAMENTE', category: 'COPAS/VASOS' },
+  { id: 'cv12', name: 'Eter Special', description: 'Absolut regular, Granadina, Jugo de arándanos, Sprite y rodajas de frutilla.', price: '$7.000', category: 'COPAS/VASOS' },
+  { id: 'cv13', name: 'Moscow Mule', description: 'Dos trago y sabes que me pongo bellaco', price: 'PRÓXIMAMENTE', category: 'COPAS/VASOS' },
 
   // JARRAS
   { id: 'j1', name: 'Smirnoff + speed', description: 'Frutos rojos, citric, tropical', price: '$10.000', category: 'JARRAS' },
