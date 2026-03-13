@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { 
-  Music, 
-  Wine, 
-  Clock, 
-  Wifi, 
+import {
+  Music,
+  Wine,
+  Clock,
+  Wifi,
   ChevronDown,
   Zap,
   GlassWater,
@@ -14,18 +14,19 @@ import {
   MessageSquare,
   Instagram
 } from 'lucide-react';
-import { MENU_ITEMS, OPENING_HOURS, PROMOS, WIFI_DATA, LOCATION_DATA, CONTACT_DATA } from './constants';
+import { OPENING_HOURS, PROMOS, WIFI_DATA, LOCATION_DATA, CONTACT_DATA } from './constants';
+import { MENU_ITEMS } from './MENU_ITEMS';
 
 const App: React.FC = () => {
-  const categories = ['COPAS/VASOS', 'JARRAS', 'CERVEZAS', 'VINOS', 'OTROS'] as const;
+  const categories = ['COPAS/VASOS', 'WHISKY', 'JARRAS', 'CERVEZAS', 'VINOS', 'OTROS'] as const;
 
   return (
     <div className="min-h-screen bg-nebula text-white selection:bg-red-600 selection:text-white">
       {/* Background stars effect */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
         {[...Array(50)].map((_, i) => (
-          <div 
-            key={i} 
+          <div
+            key={i}
             className="absolute rounded-full bg-white animate-pulse"
             style={{
               top: `${Math.random() * 100}%`,
@@ -46,7 +47,7 @@ const App: React.FC = () => {
             ETER bar
           </h1>
         </div>
-        
+
         <p className="text-lg md:text-2xl font-light tracking-[0.4em] uppercase max-w-2xl animate-in slide-in-from-bottom duration-1000 text-gray-300">
           "aquí solo tragos y buena música"
         </p>
@@ -62,14 +63,14 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center text-center mb-8">
             <h2 className="font-syncopate text-xl md:text-2xl font-bold tracking-[0.5em] text-red-600 uppercase">Promos Imperdibles</h2>
           </div>
-          
+
           <div className={`grid grid-cols-1 ${PROMOS.length > 1 ? 'lg:grid-cols-2' : ''} gap-8`}>
             {PROMOS.map((promo, index) => (
               <div key={index} className="border-2 border-red-600 border-neon-red p-8 md:p-12 text-center rounded-sm bg-gradient-to-br from-red-950/20 to-black relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                   <Zap className="w-24 h-24 text-red-600" />
                 </div>
-                
+
                 <h3 className="font-syncopate text-xl md:text-2xl font-bold mb-4 text-white tracking-widest relative z-10">
                   {promo.title}
                 </h3>
@@ -152,7 +153,7 @@ const App: React.FC = () => {
                 </li>
               </ul>
               <div className="pt-6">
-                <a 
+                <a
                   href={CONTACT_DATA.whatsapp}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -167,11 +168,11 @@ const App: React.FC = () => {
               <div className="absolute inset-0 bg-red-600 opacity-20 group-hover:opacity-10 transition-opacity"></div>
               <div className="border-2 border-red-900 p-2">
                 <div className="bg-[#050000] p-12 aspect-square flex flex-col items-center justify-center text-center space-y-6">
-                   <h3 className="font-syncopate text-6xl md:text-8xl font-bold opacity-10 select-none">EVENTOS</h3>
-                   <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                      <span className="text-red-600 text-xs font-black tracking-[0.5em] uppercase mb-2">Exclusividad</span>
-                      <span className="text-2xl md:text-4xl font-bold uppercase tracking-tighter text-white">Momentos Infinitos</span>
-                   </div>
+                  <h3 className="font-syncopate text-6xl md:text-8xl font-bold opacity-10 select-none">EVENTOS</h3>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                    <span className="text-red-600 text-xs font-black tracking-[0.5em] uppercase mb-2">Exclusividad</span>
+                    <span className="text-2xl md:text-4xl font-bold uppercase tracking-tighter text-white">Momentos Infinitos</span>
+                  </div>
                 </div>
               </div>
               {/* Decorative corner elements */}
@@ -185,7 +186,7 @@ const App: React.FC = () => {
       {/* Info, Schedule & Location Grid */}
       <section className="py-32 px-4 bg-black/80 z-10 relative">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          
+
           {/* Opening Hours */}
           <div className="space-y-8 p-8 border border-white/5 bg-gradient-to-b from-white/5 to-transparent rounded-sm hover:border-red-600/30 transition-all">
             <div className="flex items-center gap-4 mb-6">
@@ -213,18 +214,18 @@ const App: React.FC = () => {
                 {LOCATION_DATA.address}
               </p>
               <div className="flex flex-col gap-4">
-                <a 
-                  href={LOCATION_DATA.mapsLink} 
-                  target="_blank" 
+                <a
+                  href={LOCATION_DATA.mapsLink}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-red-600 hover:text-red-400 font-bold uppercase tracking-widest text-sm transition-colors group"
                 >
                   Ver en Google Maps
                   <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </a>
-                <a 
-                  href={CONTACT_DATA.instagram} 
-                  target="_blank" 
+                <a
+                  href={CONTACT_DATA.instagram}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-white hover:text-red-600 font-bold uppercase tracking-widest text-sm transition-colors group"
                 >
@@ -263,8 +264,8 @@ const App: React.FC = () => {
               "En ETER no solo servimos tragos. Creamos el espacio perfecto donde el sonido del hielo y el ritmo de la música se funden en una experiencia infinita."
             </p>
             <div className="flex gap-4 items-center">
-               <Music className="text-red-600 animate-bounce" />
-               <span className="text-sm uppercase tracking-widest font-bold">Good Music Only</span>
+              <Music className="text-red-600 animate-bounce" />
+              <span className="text-sm uppercase tracking-widest font-bold">Good Music Only</span>
             </div>
           </div>
 
@@ -274,20 +275,20 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="py-20 px-4 border-t border-white/5 text-center z-10 relative bg-black">
         <div className="mb-12">
-            <span className="font-syncopate text-5xl font-bold text-red-600 text-neon-red">ETER</span>
-            <p className="mt-4 text-gray-500 uppercase tracking-[0.5em] text-xs font-bold">Aquí solo tragos y buena música</p>
+          <span className="font-syncopate text-5xl font-bold text-red-600 text-neon-red">ETER</span>
+          <p className="mt-4 text-gray-500 uppercase tracking-[0.5em] text-xs font-bold">Aquí solo tragos y buena música</p>
         </div>
 
         <div className="space-y-4">
-            <p className="text-gray-600 text-[10px] uppercase tracking-[0.4em] font-bold">
-            © 2026 ETER BAR 
-            </p>
-            <p className="text-gray-800 text-[8px] uppercase tracking-widest px-4">
-                Beber con moderación. Prohibida la venta a menores de 18 años.
-            </p>
-            <p className="text-gray-900 text-[9px] uppercase tracking-widest mt-2">
-                {LOCATION_DATA.address}
-            </p>
+          <p className="text-gray-600 text-[10px] uppercase tracking-[0.4em] font-bold">
+            © 2026 ETER BAR
+          </p>
+          <p className="text-gray-800 text-[8px] uppercase tracking-widest px-4">
+            Beber con moderación. Prohibida la venta a menores de 18 años.
+          </p>
+          <p className="text-gray-900 text-[9px] uppercase tracking-widest mt-2">
+            {LOCATION_DATA.address}
+          </p>
         </div>
       </footer>
     </div>
