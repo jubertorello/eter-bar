@@ -4,7 +4,7 @@ export interface DrinkItem {
   name: string;
   description: string;
   price: string;
-  category: 'COCKTAILS' | 'MEDIDAS' | 'JARRAS' | 'CERVEZAS' | 'VINOS' | 'OTROS';
+  category: 'CÓCTELES' | 'MEDIDAS' | 'JARRAS' | 'CERVEZAS' | 'VINOS' | 'OTROS';
 }
 
 export interface OpeningHour {

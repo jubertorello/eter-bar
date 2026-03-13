@@ -18,7 +18,7 @@ import { OPENING_HOURS, PROMOS, WIFI_DATA, LOCATION_DATA, CONTACT_DATA } from '.
 import { MENU_ITEMS } from './MENU_ITEMS';
 
 const App: React.FC = () => {
-  const categories = ['COCKTAILS', 'MEDIDAS', 'JARRAS', 'CERVEZAS', 'VINOS', 'OTROS'] as const;
+  const categories = ['CÓCTELES', 'MEDIDAS', 'JARRAS', 'CERVEZAS', 'VINOS', 'OTROS'] as const;
 
   return (
     <div className="min-h-screen bg-nebula text-white selection:bg-red-600 selection:text-white">
