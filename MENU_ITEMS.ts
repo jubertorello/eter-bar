@@ -4,7 +4,8 @@ import { DrinkItem } from './types';
 export const MENU_ITEMS: DrinkItem[] = [
     // CÓCTELES
     { id: 'cv1', name: 'Gin Tonic', description: 'Neutro, Frutos Rojos, Naranja', price: '$6.000', category: 'CÓCTELES' },
-    { id: 'cv2', name: 'Aperol Spritz', description: 'Clásico con rodaja de naranja y soda', price: '$6.500', category: 'CÓCTELES' },
+    { id: 'cv2', name: 'Aperol Spritz', description: 'Clásico con rodaja de naranja y soda', price: '$7.000', category: 'CÓCTELES' },
+    { id: 'cv20', name: 'Aperol Orange', description: 'Aperol con jugo de naranja y soda', price: '$6.000', category: 'CÓCTELES' },
     { id: 'cv8', name: 'Mojito Malibu', description: 'Ron Malibu, menta y limón', price: '$6.500', category: 'CÓCTELES' },
     { id: 'cv9', name: 'Mojito Frutos rojos', description: 'Ron Malibu, menta y limón + frutos rojos', price: '$6.500', category: 'CÓCTELES' },
     { id: 'cv11', name: 'Negroni', description: 'Campari, Vermut, Gin y rodaja de naranja', price: '$5.000', category: 'CÓCTELES' },
@@ -26,6 +27,9 @@ export const MENU_ITEMS: DrinkItem[] = [
     { id: 'cv16', name: 'Gancia + Sprite', description: 'Medida de Gancia con Sprite', price: '$5.000', category: 'MEDIDAS' },
     { id: 'w1', name: 'J&B', description: 'Medida de whisky', price: '$7.000', category: 'MEDIDAS' },
     { id: 'w2', name: 'Ballantines', description: 'Medida de whisky', price: '$6.000', category: 'MEDIDAS' },
+    { id: 'g1', name: 'Gin Gordon\'s', description: 'Medida de gin', price: '$6.000', category: 'MEDIDAS' },
+    { id: 'g2', name: 'Gin Herederos', description: 'Medida de gin', price: '$7.000', category: 'MEDIDAS' },
+    { id: 'g3', name: 'Gin Beefeater', description: 'Medida de gin', price: '$9.000', category: 'MEDIDAS' },
 
     // JARRAS
     { id: 'j1', name: 'Smirnoff + speed', description: 'Frutos rojos, citric, tropical', price: '$10.000', category: 'JARRAS' },
