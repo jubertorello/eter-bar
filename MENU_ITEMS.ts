@@ -16,7 +16,7 @@ export const MENU_ITEMS: DrinkItem[] = [
     { id: 'cv14', name: 'Cuba Libre', description: 'Ron dorado, coca-cola y jugo de limón', price: '$6.500', category: 'CÓCTELES' },
     { id: 'cv15', name: 'Azulito', description: 'Smirnoff, jugo de limón, powerade, sprite', price: '$7.000', category: 'CÓCTELES' },
     { id: 'cv17', name: 'Campari Tonic', description: 'Campari con tónica y rodaja de limón', price: '$6.500', category: 'CÓCTELES' },
-    { id: 'cv18', name: 'Moscow Mule', description: 'Absolut regular, ginger beer, jugo de limón y menta. (en su vaso tradicional)', price: '$14.000', category: 'CÓCTELES' },
+    { id: 'cv18', name: 'Moscow Mule ⭐️', description: 'Absolut regular, ginger beer, jugo de limón y menta. (en su vaso tradicional)', price: '$14.000', category: 'CÓCTELES' },
 
     // MEDIDAS
     { id: 'cv3', name: 'Fernet + Coca', description: 'Medida Fernet + Botella coca', price: '$6.500', category: 'MEDIDAS' },
