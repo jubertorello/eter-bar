@@ -57,13 +57,15 @@ export const OPENING_HOURS: OpeningHour[] = [
  * Puedes añadir o quitar promociones aquí. 
  */
 export const PROMOS: Promo[] = [
-  { 
+  {
+    id: 'p1',
     title: 'ESPECIAL DE LOS JUEVES', 
     description: '2x1 GIN TONIC', 
     day: 'TODOS LOS JUEVES - TODA LA NOCHE',
     highlight: true 
   },
-  { 
+  {
+    id: 'p2',
     title: 'DOMINGO RELAX', 
     description: '2x1 FERNET', 
     day: 'PROMO TODA LA NOCHE',
