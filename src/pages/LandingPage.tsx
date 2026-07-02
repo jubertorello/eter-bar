@@ -14,7 +14,9 @@ import {
   Instagram,
   Camera,
   X,
-  XCircle
+  XCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { OPENING_HOURS, WIFI_DATA, LOCATION_DATA, CONTACT_DATA } from '../../constants';
 import { useAppContext } from '../context/AppContext';
@@ -31,9 +33,30 @@ const LandingPage: React.FC = () => {
     if (gallery.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentGalleryIndex((prev) => (prev + 1) % gallery.length);
-    }, 3000);
+    }, 5000);
+    
     return () => clearInterval(interval);
   }, [gallery.length]);
+
+  const handleNextGalleryImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedGalleryImage) return;
+    const currentIndex = gallery.findIndex(img => img.url === selectedGalleryImage);
+    if (currentIndex !== -1) {
+      const nextIndex = (currentIndex + 1) % gallery.length;
+      setSelectedGalleryImage(gallery[nextIndex].url);
+    }
+  };
+
+  const handlePrevGalleryImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedGalleryImage) return;
+    const currentIndex = gallery.findIndex(img => img.url === selectedGalleryImage);
+    if (currentIndex !== -1) {
+      const prevIndex = (currentIndex - 1 + gallery.length) % gallery.length;
+      setSelectedGalleryImage(gallery[prevIndex].url);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-nebula text-white selection:bg-red-600 selection:text-white">
@@ -238,8 +261,8 @@ const LandingPage: React.FC = () => {
                 className="flex transition-transform duration-1000 ease-in-out h-full"
                 style={{ transform: `translateX(-${currentGalleryIndex * 100}%)` }}
               >
-                {gallery.map((img) => {
-                  const isVideo = img.url.match(/\.(mp4|webm|ogg|mov)$/i);
+                {gallery.map((img, idx) => {
+                  const isVideo = img.url?.match(/\.(mp4|webm|ogg|mov)$/i);
                   return (
                   <div 
                     key={img.id} 
@@ -247,7 +270,14 @@ const LandingPage: React.FC = () => {
                     onClick={() => setSelectedGalleryImage(img.url)}
                   >
                     {isVideo ? (
-                      <video src={img.url} className="w-full h-full object-cover" muted loop playsInline autoPlay />
+                      <video 
+                        src={img.url} 
+                        className="w-full h-full object-cover" 
+                        muted 
+                        loop
+                        playsInline 
+                        autoPlay
+                      />
                     ) : (
                       <img 
                         src={img.url} 
@@ -458,7 +488,7 @@ const LandingPage: React.FC = () => {
           onClick={() => setSelectedGalleryImage(null)}
         >
           <button 
-            className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors"
+            className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors z-10"
             onClick={(e) => {
               e.stopPropagation();
               setSelectedGalleryImage(null);
@@ -467,24 +497,40 @@ const LandingPage: React.FC = () => {
             <XCircle className="w-8 h-8 md:w-10 md:h-10" />
           </button>
           
-          {selectedGalleryImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-            <video 
-              src={selectedGalleryImage} 
-              className="max-w-full max-h-[90vh] object-contain rounded-sm border border-white/10 shadow-2xl" 
-              controls 
-              autoPlay 
-              muted
-              playsInline 
-              onClick={(e) => e.stopPropagation()} 
-            />
-          ) : (
-            <img 
-              src={selectedGalleryImage} 
-              alt="ETER Bar Gallery" 
-              className="max-w-full max-h-[90vh] object-contain rounded-sm border border-white/10 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
-          )}
+          <button 
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors z-10 bg-black/20 p-2 rounded-full hover:bg-black/50"
+            onClick={handlePrevGalleryImage}
+          >
+            <ChevronLeft className="w-8 h-8 md:w-12 md:h-12" />
+          </button>
+
+          <button 
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors z-10 bg-black/20 p-2 rounded-full hover:bg-black/50"
+            onClick={handleNextGalleryImage}
+          >
+            <ChevronRight className="w-8 h-8 md:w-12 md:h-12" />
+          </button>
+
+          <div className="relative w-full max-w-5xl h-[80vh] md:h-[90vh] flex items-center justify-center">
+            {selectedGalleryImage?.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+              <video 
+                src={selectedGalleryImage} 
+                className="max-w-full max-h-full object-contain rounded-sm shadow-2xl" 
+                controls 
+                autoPlay 
+                muted
+                playsInline 
+                onClick={(e) => e.stopPropagation()} 
+              />
+            ) : (
+              <img 
+                src={selectedGalleryImage} 
+                alt="ETER Bar Gallery" 
+                className="max-w-full max-h-full object-contain rounded-sm shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+          </div>
         </div>
       )}
     </div>

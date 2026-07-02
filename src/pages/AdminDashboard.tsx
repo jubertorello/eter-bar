@@ -642,7 +642,7 @@ const AdminDashboard: React.FC = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {state.gallery.map(img => {
-                const isVideo = img.url.match(/\.(mp4|webm|ogg|mov)$/i);
+                const isVideo = img.url?.match(/\.(mp4|webm|ogg|mov)$/i);
                 return (
                   <div key={img.id} className="relative group aspect-square rounded-sm overflow-hidden bg-white/5 border border-white/10">
                     {isVideo ? (
