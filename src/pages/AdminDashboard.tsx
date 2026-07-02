@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Wine, Zap, List, Plus, Trash2, Edit2, LogOut, ArrowLeft, Image as ImageIcon, Lock, ChevronUp, ChevronDown, Search } from 'lucide-react';
+import { Wine, Zap, List, Plus, Trash2, Edit2, LogOut, ArrowLeft, Image as ImageIcon, Lock, ChevronUp, ChevronDown, Search, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DrinkItem, Promo } from '../../types';
 
@@ -23,6 +23,7 @@ const AdminDashboard: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginForm, setLoginForm] = useState({ user: '', pass: '' });
   const [loginError, setLoginError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const auth = sessionStorage.getItem('eter_admin_auth');
@@ -188,13 +189,22 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">Contraseña</label>
-              <input 
-                type="password"
-                required
-                value={loginForm.pass}
-                onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
-                className="w-full bg-[#0a0000] border border-white/20 p-3 rounded-sm focus:border-red-600 outline-none transition-colors" 
-              />
+              <div className="relative">
+                <input 
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={loginForm.pass}
+                  onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
+                  className="w-full bg-[#0a0000] border border-white/20 p-3 pr-12 rounded-sm focus:border-red-600 outline-none transition-colors" 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
             
             {loginError && (
