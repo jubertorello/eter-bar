@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Music,
   Wine,
@@ -13,7 +13,8 @@ import {
   MessageSquare,
   Instagram,
   Camera,
-  X
+  X,
+  XCircle
 } from 'lucide-react';
 import { OPENING_HOURS, WIFI_DATA, LOCATION_DATA, CONTACT_DATA } from '../../constants';
 import { useAppContext } from '../context/AppContext';
@@ -21,8 +22,18 @@ import { DrinkItem } from '../../types';
 
 const LandingPage: React.FC = () => {
   const { state } = useAppContext();
-  const { menuItems, promos, categories } = state;
+  const { menuItems, promos, categories, gallery } = state;
   const [selectedImage, setSelectedImage] = useState<DrinkItem | null>(null);
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
+  const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0);
+
+  useEffect(() => {
+    if (gallery.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentGalleryIndex((prev) => (prev + 1) % gallery.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [gallery.length]);
 
   return (
     <div className="min-h-screen bg-nebula text-white selection:bg-red-600 selection:text-white">
@@ -107,7 +118,7 @@ const LandingPage: React.FC = () => {
 
       {/* Promotion Highlight Section */}
       {promos.length > 0 && (
-        <section id="promo" className="py-20 px-4 bg-black/60 backdrop-blur-md z-10 relative border-y border-red-900/30">
+        <section id="promo" className="py-12 px-4 bg-black/60 backdrop-blur-md z-10 relative border-y border-red-900/30">
           <div className="max-w-6xl mx-auto space-y-12">
             <div className="flex flex-col items-center text-center mb-8">
               <h2 className="font-syncopate text-xl md:text-2xl font-bold tracking-[0.5em] text-red-600 uppercase">Promos Imperdibles</h2>
@@ -156,7 +167,7 @@ const LandingPage: React.FC = () => {
       )}
 
       {/* Menu Section */}
-      <section id="menu" className="py-24 px-4 z-10 relative">
+      <section id="menu" className="py-16 px-4 z-10 relative">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col items-center gap-2 mb-20 text-center">
             <Wine className="text-red-600 w-10 h-10 mb-4" />
@@ -211,8 +222,58 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Gallery Section */}
+      {gallery.length > 0 && (
+        <section id="galeria" className="py-16 px-4 bg-black z-10 relative">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="font-syncopate text-4xl md:text-5xl font-bold uppercase tracking-tighter text-white">
+                El <span className="text-red-600">Lugar</span>
+              </h2>
+              <p className="mt-4 text-gray-400 font-light tracking-widest uppercase text-sm">Momentos ETER</p>
+            </div>
+
+            <div className="relative overflow-hidden w-full max-w-md md:max-w-lg mx-auto rounded-sm border border-white/10 aspect-[3/4] md:aspect-[4/5]">
+              <div 
+                className="flex transition-transform duration-1000 ease-in-out h-full"
+                style={{ transform: `translateX(-${currentGalleryIndex * 100}%)` }}
+              >
+                {gallery.map((img) => (
+                  <div 
+                    key={img.id} 
+                    className="w-full h-full shrink-0 relative cursor-pointer group"
+                    onClick={() => setSelectedGalleryImage(img.url)}
+                  >
+                    <img 
+                      src={img.url} 
+                      alt="ETER Bar" 
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <Camera className="w-12 h-12 text-white/80" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Dots Indicator */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {gallery.map((_, idx) => (
+                  <button 
+                    key={idx}
+                    onClick={() => setCurrentGalleryIndex(idx)}
+                    className={`h-2 rounded-full transition-all duration-300 ${idx === currentGalleryIndex ? 'bg-red-600 w-8' : 'bg-white/50 hover:bg-white w-2'}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Events & Rental Section */}
-      <section id="eventos" className="py-24 px-4 bg-gradient-to-b from-black to-[#1a0000] z-10 relative border-y border-red-900/20">
+      <section id="eventos" className="py-16 px-4 bg-gradient-to-b from-black to-[#1a0000] z-10 relative border-y border-red-900/20">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
@@ -269,7 +330,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Info, Schedule & Location Grid */}
-      <section className="py-32 px-4 bg-black/80 z-10 relative">
+      <section className="py-16 px-4 bg-black/80 z-10 relative">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
           {/* Opening Hours */}
@@ -358,15 +419,22 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-20 px-4 border-t border-white/5 text-center z-10 relative bg-black">
-        <div className="mb-12">
-          <span className="font-syncopate text-5xl font-bold text-red-600 text-neon-red">ETER</span>
+      <footer className="pt-8 pb-16 px-4 border-t border-white/5 text-center z-10 relative bg-black">
+        <div className="mb-12 flex flex-col items-center">
+          <img 
+            src="https://res.cloudinary.com/djqtkbyez/image/upload/v1783016155/WhatsApp_Image_2026-07-02_at_19.36.02_bhmcck.jpg" 
+            alt="ETER Logo" 
+            className="w-48 md:w-64 h-auto object-contain mb-4 drop-shadow-xl rounded-full" 
+          />
           <p className="mt-4 text-gray-500 uppercase tracking-[0.5em] text-xs font-bold">Aquí solo tragos y buena música</p>
         </div>
 
         <div className="space-y-4">
           <p className="text-gray-600 text-[10px] uppercase tracking-[0.4em] font-bold">
-            © 2026 ETER BAR
+            © 2026 ETER BAR <span className="mx-2">|</span> 
+            <a href="https://wa.me/34660104026" target="_blank" rel="noopener noreferrer" className="text-white hover:text-red-600 underline underline-offset-4 decoration-white/30 hover:decoration-red-600 transition-colors">
+              WEB BY JULES
+            </a>
           </p>
           <p className="text-gray-800 text-[8px] uppercase tracking-widest px-4">
             Beber con moderación. Prohibida la venta a menores de 18 años.
@@ -376,6 +444,29 @@ const LandingPage: React.FC = () => {
           </p>
         </div>
       </footer>
+      {/* Gallery Lightbox */}
+      {selectedGalleryImage && (
+        <div 
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-200"
+          onClick={() => setSelectedGalleryImage(null)}
+        >
+          <button 
+            className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedGalleryImage(null);
+            }}
+          >
+            <XCircle className="w-8 h-8 md:w-10 md:h-10" />
+          </button>
+          <img 
+            src={selectedGalleryImage} 
+            alt="ETER Bar Gallery" 
+            className="max-w-full max-h-[90vh] object-contain rounded-sm border border-white/10 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DrinkItem, Promo, BannerData } from '../../types';
+import { DrinkItem, Promo, BannerData, GalleryImage } from '../../types';
 import { supabase } from '../lib/supabase';
 
 interface AppState {
   menuItems: DrinkItem[];
   promos: Promo[];
+  promos: Promo[];
+  gallery: GalleryImage[];
   categories: string[];
   banner: BannerData;
 }
@@ -20,7 +22,10 @@ interface AppContextType {
   deletePromo: (id: string) => Promise<void>;
   updateBanner: (banner: BannerData) => Promise<void>;
   updateCategories: (categories: string[]) => Promise<void>;
+  updateCategories: (categories: string[]) => Promise<void>;
   moveDrink: (id: string, direction: 'up' | 'down') => Promise<void>;
+  addGalleryImage: (image: GalleryImage) => Promise<void>;
+  deleteGalleryImage: (id: string) => Promise<void>;
 }
 
 const defaultCategories = ['CÓCTELES', 'MEDIDAS', 'JARRAS', 'CERVEZAS', 'VINOS', 'OTROS'];
@@ -36,6 +41,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [state, setState] = useState<AppState>({
     menuItems: [],
     promos: [],
+    gallery: [],
     categories: defaultCategories,
     banner: defaultBanner,
   });
@@ -48,9 +54,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [menuRes, promosRes, settingsRes] = await Promise.all([
+      const [menuRes, promosRes, galleryRes, settingsRes] = await Promise.all([
         supabase.from('eter_menu_items').select('*').order('created_at', { ascending: true }),
         supabase.from('eter_promos').select('*').order('created_at', { ascending: true }),
+        supabase.from('eter_gallery').select('*').order('created_at', { ascending: false }),
         supabase.from('eter_settings').select('*')
       ]);
       
@@ -67,6 +74,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setState({
         menuItems: menuRes.data || [],
         promos: promosRes.data || [],
+        gallery: galleryRes.data || [],
         categories: newCategories,
         banner: newBanner
       });
@@ -181,6 +189,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const addGalleryImage = async (image: GalleryImage) => {
+    const { data, error } = await supabase.from('eter_gallery').insert(image).select().single();
+    if (error) throw error;
+    if (data) {
+      setState(prev => ({ ...prev, gallery: [data, ...prev.gallery] }));
+    }
+  };
+
+  const deleteGalleryImage = async (id: string) => {
+    const { error } = await supabase.from('eter_gallery').delete().eq('id', id);
+    if (error) throw error;
+    setState(prev => ({
+      ...prev,
+      gallery: prev.gallery.filter(item => item.id !== id)
+    }));
+  };
+
   return (
     <AppContext.Provider value={{
       state,
@@ -193,7 +218,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deletePromo,
       updateBanner,
       updateCategories,
-      moveDrink
+      moveDrink,
+      addGalleryImage,
+      deleteGalleryImage
     }}>
       {children}
     </AppContext.Provider>

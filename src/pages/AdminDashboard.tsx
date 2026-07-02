@@ -8,8 +8,8 @@ const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 const AdminDashboard: React.FC = () => {
-  const { state, addDrink, updateDrink, deleteDrink, addPromo, updatePromo, deletePromo, updateCategories, moveDrink } = useAppContext();
-  const [activeTab, setActiveTab] = useState<'tragos' | 'promos'>('tragos');
+  const { state, addDrink, updateDrink, deleteDrink, addPromo, updatePromo, deletePromo, updateCategories, moveDrink, addGalleryImage, deleteGalleryImage } = useAppContext();
+  const [activeTab, setActiveTab] = useState<'tragos' | 'promos' | 'galeria'>('tragos');
   
   // Toast notifications
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -77,7 +77,8 @@ const AdminDashboard: React.FC = () => {
       });
       const data = await res.json();
       if (data.secure_url) {
-        setDrinkForm(prev => ({ ...prev, image: data.secure_url }));
+        const optimizedUrl = data.secure_url.replace('/upload/', '/upload/f_webp,q_auto/');
+        setDrinkForm(prev => ({ ...prev, image: optimizedUrl }));
       } else {
         alert("Error al subir imagen");
       }
@@ -163,6 +164,51 @@ const AdminDashboard: React.FC = () => {
         showToast('Promo eliminada correctamente');
       } catch (err) {
         showToast('Error al eliminar la promo', 'error');
+      }
+    }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '');
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.secure_url) {
+        const optimizedUrl = data.secure_url.replace('/upload/', '/upload/f_webp,q_auto/');
+        await addGalleryImage({
+          id: 'g' + Date.now(),
+          url: optimizedUrl
+        });
+        showToast('Imagen agregada a la galería');
+      } else {
+        throw new Error('No url returned');
+      }
+    } catch (err) {
+      showToast('Error al subir imagen a la galería', 'error');
+    } finally {
+      setIsUploading(false);
+      e.target.value = ''; // Reset input
+    }
+  };
+
+  const handleDeleteGallery = async (id: string) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar esta imagen de la galería?')) {
+      try {
+        await deleteGalleryImage(id);
+        showToast('Imagen eliminada de la galería');
+      } catch (err) {
+        showToast('Error al eliminar la imagen', 'error');
       }
     }
   };
@@ -271,6 +317,12 @@ const AdminDashboard: React.FC = () => {
             className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-4 py-2 md:py-3 rounded-sm transition-all text-sm md:text-base ${activeTab === 'promos' ? 'bg-red-600 text-black font-bold' : 'hover:bg-white/5'}`}
           >
             <Zap className="w-4 h-4 md:w-5 md:h-5" /> Promociones
+          </button>
+          <button 
+            onClick={() => setActiveTab('galeria')}
+            className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-4 py-2 md:py-3 rounded-sm transition-all text-sm md:text-base ${activeTab === 'galeria' ? 'bg-red-600 text-black font-bold' : 'hover:bg-white/5'}`}
+          >
+            <ImageIcon className="w-4 h-4 md:w-5 md:h-5" /> Galería
           </button>
         </nav>
 
@@ -549,6 +601,52 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+        {/* GALERIA TAB */}
+        {activeTab === 'galeria' && (
+          <div className="max-w-5xl mx-auto animate-in fade-in">
+            <h2 className="text-3xl font-syncopate font-bold uppercase tracking-widest mb-8">Galería</h2>
+            
+            <div className="bg-white/5 p-6 border border-white/10 rounded-sm mb-8">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Plus className="text-red-600" /> Añadir Nueva Foto
+              </h3>
+              <p className="text-gray-400 text-sm mb-4">Sube fotos del bar, los tragos o la gente. Se mostrarán en la página principal.</p>
+              
+              <div className="flex items-center gap-4">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleGalleryUpload} 
+                  disabled={isUploading}
+                  className="text-sm file:mr-4 file:py-3 file:px-6 file:rounded-sm file:border-0 file:text-sm file:font-bold file:uppercase file:tracking-wider file:bg-red-600 file:text-black hover:file:bg-red-700 disabled:opacity-50"
+                />
+                {isUploading && <span className="text-sm text-yellow-500 font-bold animate-pulse">Subiendo imagen...</span>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {state.gallery.map(img => (
+                <div key={img.id} className="relative group aspect-square rounded-sm overflow-hidden bg-white/5 border border-white/10">
+                  <img src={img.url} alt="Gallery item" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button 
+                      onClick={() => handleDeleteGallery(img.id)}
+                      className="bg-red-600 text-white p-3 rounded-full hover:bg-red-700 transition-transform hover:scale-110"
+                      title="Eliminar foto"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {state.gallery.length === 0 && (
+                <div className="col-span-full py-12 text-center text-gray-500 border border-dashed border-white/20 rounded-sm">
+                  No hay imágenes en la galería todavía.
+                </div>
+              )}
             </div>
           </div>
         )}

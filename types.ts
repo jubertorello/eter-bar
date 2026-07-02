@@ -22,6 +22,12 @@ export interface Promo {
   image?: string;
 }
 
+export interface GalleryImage {
+  id: string;
+  url: string;
+  created_at?: string;
+}
+
 export interface BannerData {
   isActive: boolean;
   text: string;
