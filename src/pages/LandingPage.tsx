@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Music,
   Wine,
@@ -11,17 +11,50 @@ import {
   ExternalLink,
   PartyPopper,
   MessageSquare,
-  Instagram
+  Instagram,
+  Camera,
+  X
 } from 'lucide-react';
 import { OPENING_HOURS, WIFI_DATA, LOCATION_DATA, CONTACT_DATA } from '../../constants';
 import { useAppContext } from '../context/AppContext';
+import { DrinkItem } from '../../types';
 
 const LandingPage: React.FC = () => {
   const { state } = useAppContext();
   const { menuItems, promos, categories } = state;
+  const [selectedImage, setSelectedImage] = useState<DrinkItem | null>(null);
 
   return (
     <div className="min-h-screen bg-nebula text-white selection:bg-red-600 selection:text-white">
+
+      {/* Lightbox Modal */}
+      {selectedImage && selectedImage.image && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 p-4 animate-in fade-in">
+          <button 
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-red-600 text-white rounded-full transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          
+          <div className="max-w-3xl w-full flex flex-col items-center">
+            <img 
+              src={selectedImage.image} 
+              alt={selectedImage.name} 
+              className="max-h-[70vh] w-auto object-contain rounded-sm border border-white/10 mb-6 shadow-2xl"
+            />
+            <div className="text-center">
+              <h3 className="font-syncopate text-3xl font-bold uppercase tracking-widest text-red-500 mb-2">
+                {selectedImage.name}
+              </h3>
+              <p className="text-xl font-bold text-white mb-2">{selectedImage.price}</p>
+              <p className="text-gray-400 uppercase tracking-widest text-sm max-w-lg mx-auto">
+                {selectedImage.description}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Background stars effect */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
@@ -42,19 +75,33 @@ const LandingPage: React.FC = () => {
       </div>
 
       {/* Hero Section */}
-      <header className="relative h-[90vh] flex flex-col items-center justify-center text-center px-4 z-10">
-        <div className="mb-6 animate-in fade-in duration-1000">
-          <h1 className="font-syncopate text-7xl md:text-9xl font-bold tracking-tighter text-red-600 text-neon-red uppercase">
-            ETER bar
-          </h1>
+      <header className="relative h-[90vh] flex flex-col items-center justify-end text-center px-4 z-10 overflow-hidden pb-10 bg-black">
+        
+        {/* Background Video */}
+        <div className="absolute inset-0 z-0 flex items-center justify-center">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-contain md:object-cover"
+          >
+            <source src="https://res.cloudinary.com/djqtkbyez/video/upload/v1783014037/PixVerse_V6_Image_Text_360P_que_las_letras_apa_zzlhxz.mp4" type="video/mp4" />
+          </video>
+          {/* Gradiente para transición suave hacia el contenido inferior */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90"></div>
         </div>
 
-        <p className="text-lg md:text-2xl font-light tracking-[0.4em] uppercase max-w-2xl animate-in slide-in-from-bottom duration-1000 text-gray-300">
-          "aquí solo tragos y buena música"
-        </p>
-
-        <div className="absolute bottom-10 animate-bounce cursor-pointer" onClick={() => document.getElementById('promo')?.scrollIntoView({ behavior: 'smooth' })}>
-          <ChevronDown className="w-8 h-8 text-red-600" />
+        <div 
+          className="relative z-10 flex flex-col items-center gap-3 cursor-pointer group mb-4" 
+          onClick={() => document.getElementById('promo')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          <p className="text-xs md:text-sm font-light tracking-[0.3em] uppercase text-gray-300 group-hover:text-white transition-colors text-center">
+            Desliza para ver más
+          </p>
+          <div className="animate-bounce">
+            <ChevronDown className="w-8 h-8 text-red-600" />
+          </div>
         </div>
       </header>
 
@@ -128,17 +175,30 @@ const LandingPage: React.FC = () => {
                 </div>
                 <div className="space-y-8">
                   {menuItems.filter(item => item.category === cat).map((item) => (
-                    <div key={item.id} className="group relative">
-                      <div className="flex justify-between items-end mb-2">
-                        <span className="text-xl font-bold tracking-wide uppercase group-hover:text-red-500 transition-colors duration-300">
-                          {item.name}
-                        </span>
-                        <div className="flex-grow mx-4 border-b border-white/10 border-dotted mb-1.5"></div>
-                        <span className="text-red-600 font-syncopate font-bold text-lg">{item.price}</span>
+                    <div key={item.id} className="group relative flex gap-4 sm:gap-6 items-start">
+                      
+                      {item.image && (
+                        <button 
+                          onClick={() => setSelectedImage(item)}
+                          className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden rounded-sm border border-white/10 hover:border-red-600 transition-colors"
+                          title="Ver en grande"
+                        >
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </button>
+                      )}
+
+                      <div className="flex-grow min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-1 sm:mb-2 gap-1 sm:gap-0">
+                          <span className="text-lg sm:text-xl font-bold tracking-wide uppercase group-hover:text-red-500 transition-colors duration-300 break-words">
+                            {item.name}
+                          </span>
+                          <div className="hidden sm:block flex-grow mx-4 border-b border-white/10 border-dotted mb-1.5"></div>
+                          <span className="text-red-600 font-syncopate font-bold text-base sm:text-lg whitespace-nowrap">{item.price}</span>
+                        </div>
+                        <p className="text-gray-500 text-xs sm:text-sm font-medium leading-relaxed uppercase tracking-tighter break-words">
+                          {item.description}
+                        </p>
                       </div>
-                      <p className="text-gray-500 text-sm font-medium leading-relaxed uppercase tracking-tighter">
-                        {item.description}
-                      </p>
                     </div>
                   ))}
                   {menuItems.filter(item => item.category === cat).length === 0 && (

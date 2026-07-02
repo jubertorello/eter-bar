@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DrinkItem, Promo, BannerData } from '../../types';
-import { MENU_ITEMS as initialMenuItems } from '../../MENU_ITEMS';
-import { PROMOS as initialPromos } from '../../constants';
+import { supabase } from '../lib/supabase';
 
 interface AppState {
   menuItems: DrinkItem[];
@@ -12,15 +11,16 @@ interface AppState {
 
 interface AppContextType {
   state: AppState;
-  addDrink: (drink: DrinkItem) => void;
-  updateDrink: (id: string, drink: Partial<DrinkItem>) => void;
-  deleteDrink: (id: string) => void;
-  addPromo: (promo: Promo) => void;
-  updatePromo: (id: string, promo: Partial<Promo>) => void;
-  deletePromo: (id: string) => void;
-  updateBanner: (banner: BannerData) => void;
-  updateCategories: (categories: string[]) => void;
-  moveDrink: (id: string, direction: 'up' | 'down') => void;
+  loading: boolean;
+  addDrink: (drink: DrinkItem) => Promise<void>;
+  updateDrink: (id: string, drink: Partial<DrinkItem>) => Promise<void>;
+  deleteDrink: (id: string) => Promise<void>;
+  addPromo: (promo: Promo) => Promise<void>;
+  updatePromo: (id: string, promo: Partial<Promo>) => Promise<void>;
+  deletePromo: (id: string) => Promise<void>;
+  updateBanner: (banner: BannerData) => Promise<void>;
+  updateCategories: (categories: string[]) => Promise<void>;
+  moveDrink: (id: string, direction: 'up' | 'down') => Promise<void>;
 }
 
 const defaultCategories = ['CÓCTELES', 'MEDIDAS', 'JARRAS', 'CERVEZAS', 'VINOS', 'OTROS'];
@@ -33,64 +33,115 @@ const defaultBanner: BannerData = {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<AppState>(() => {
-    const saved = localStorage.getItem('eter_app_state');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error parsing saved state', e);
-      }
-    }
-    return {
-      menuItems: initialMenuItems,
-      promos: initialPromos,
-      categories: defaultCategories,
-      banner: defaultBanner,
-    };
+  const [state, setState] = useState<AppState>({
+    menuItems: [],
+    promos: [],
+    categories: defaultCategories,
+    banner: defaultBanner,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem('eter_app_state', JSON.stringify(state));
-  }, [state]);
+    fetchData();
+  }, []);
 
-  const addDrink = (drink: DrinkItem) => {
-    setState(prev => ({ ...prev, menuItems: [...prev.menuItems, drink] }));
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [menuRes, promosRes, settingsRes] = await Promise.all([
+        supabase.from('eter_menu_items').select('*').order('created_at', { ascending: true }),
+        supabase.from('eter_promos').select('*').order('created_at', { ascending: true }),
+        supabase.from('eter_settings').select('*')
+      ]);
+      
+      let newCategories = defaultCategories;
+      let newBanner = defaultBanner;
+      
+      if (settingsRes.data) {
+        const catSet = settingsRes.data.find(s => s.key === 'categories');
+        if (catSet && catSet.value) newCategories = catSet.value;
+        const banSet = settingsRes.data.find(s => s.key === 'banner');
+        if (banSet && banSet.value) newBanner = banSet.value;
+      }
+
+      setState({
+        menuItems: menuRes.data || [],
+        promos: promosRes.data || [],
+        categories: newCategories,
+        banner: newBanner
+      });
+    } catch (e) {
+      console.error('Error fetching state', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateDrink = (id: string, updates: Partial<DrinkItem>) => {
-    setState(prev => ({
-      ...prev,
-      menuItems: prev.menuItems.map(item => item.id === id ? { ...item, ...updates } : item)
-    }));
+  const addDrink = async (drink: DrinkItem) => {
+    const { id, ...drinkData } = drink; // remove local ID
+    const { data, error } = await supabase.from('eter_menu_items').insert(drinkData).select().single();
+    if (error) throw error;
+    if (data) {
+      setState(prev => ({ ...prev, menuItems: [...prev.menuItems, data] }));
+    }
   };
 
-  const deleteDrink = (id: string) => {
+  const updateDrink = async (id: string, updates: Partial<DrinkItem>) => {
+    const { data, error } = await supabase.from('eter_menu_items').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    if (data) {
+      setState(prev => ({
+        ...prev,
+        menuItems: prev.menuItems.map(item => item.id === id ? data : item)
+      }));
+    }
+  };
+
+  const deleteDrink = async (id: string) => {
+    const { error } = await supabase.from('eter_menu_items').delete().eq('id', id);
+    if (error) throw error;
     setState(prev => ({
       ...prev,
       menuItems: prev.menuItems.filter(item => item.id !== id)
     }));
   };
 
-  const addPromo = (promo: Promo) => {
-    setState(prev => ({ ...prev, promos: [...prev.promos, promo] }));
+  const addPromo = async (promo: Promo) => {
+    const { id, ...promoData } = promo;
+    const { data, error } = await supabase.from('eter_promos').insert(promoData).select().single();
+    if (error) throw error;
+    if (data) {
+      setState(prev => ({ ...prev, promos: [...prev.promos, data] }));
+    }
   };
 
-  const updatePromo = (id: string, updates: Partial<Promo>) => {
-    setState(prev => ({
-      ...prev,
-      promos: prev.promos.map(p => p.id === id ? { ...p, ...updates } : p)
-    }));
+  const updatePromo = async (id: string, updates: Partial<Promo>) => {
+    const { data, error } = await supabase.from('eter_promos').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    if (data) {
+      setState(prev => ({
+        ...prev,
+        promos: prev.promos.map(p => p.id === id ? data : p)
+      }));
+    }
   };
 
-  const deletePromo = (id: string) => {
+  const deletePromo = async (id: string) => {
+    const { error } = await supabase.from('eter_promos').delete().eq('id', id);
+    if (error) throw error;
     setState(prev => ({
       ...prev,
       promos: prev.promos.filter(p => p.id !== id)
     }));
   };
 
-  const moveDrink = (id: string, direction: 'up' | 'down') => {
+  const moveDrink = async (id: string, direction: 'up' | 'down') => {
+    // For a real production app, order should be stored in DB.
+    // For simplicity here, we swap created_at timestamps to reorder, or we just do it locally.
+    // Let's do it locally and then maybe in a future update to DB order.
+    // Actually, to make it persistent, we need an order field. Since we don't have one, we can just update local state.
+    // But since it re-fetches on reload by created_at, reordering won't persist unless we have an order field.
+    alert("La reordenación manual requiere un campo de orden en la BD. Por ahora sólo es visual en esta sesión.");
     setState(prev => {
       const items = [...prev.menuItems];
       const index = items.findIndex(item => item.id === id);
@@ -116,17 +167,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const updateBanner = (banner: BannerData) => {
-    setState(prev => ({ ...prev, banner }));
+  const updateBanner = async (banner: BannerData) => {
+    const { error } = await supabase.from('eter_settings').upsert({ key: 'banner', value: banner });
+    if (!error) {
+      setState(prev => ({ ...prev, banner }));
+    }
   };
 
-  const updateCategories = (categories: string[]) => {
-    setState(prev => ({ ...prev, categories }));
+  const updateCategories = async (categories: string[]) => {
+    const { error } = await supabase.from('eter_settings').upsert({ key: 'categories', value: categories });
+    if (!error) {
+      setState(prev => ({ ...prev, categories }));
+    }
   };
 
   return (
     <AppContext.Provider value={{
       state,
+      loading,
       addDrink,
       updateDrink,
       deleteDrink,

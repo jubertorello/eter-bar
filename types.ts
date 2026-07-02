@@ -5,6 +5,7 @@ export interface DrinkItem {
   description: string;
   price: string;
   category: string;
+  image?: string;
 }
 
 export interface OpeningHour {
