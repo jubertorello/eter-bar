@@ -238,23 +238,30 @@ const LandingPage: React.FC = () => {
                 className="flex transition-transform duration-1000 ease-in-out h-full"
                 style={{ transform: `translateX(-${currentGalleryIndex * 100}%)` }}
               >
-                {gallery.map((img) => (
+                {gallery.map((img) => {
+                  const isVideo = img.url.match(/\.(mp4|webm|ogg|mov)$/i);
+                  return (
                   <div 
                     key={img.id} 
                     className="w-full h-full shrink-0 relative cursor-pointer group"
                     onClick={() => setSelectedGalleryImage(img.url)}
                   >
-                    <img 
-                      src={img.url} 
-                      alt="ETER Bar" 
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
+                    {isVideo ? (
+                      <video src={img.url} className="w-full h-full object-cover" muted loop playsInline autoPlay />
+                    ) : (
+                      <img 
+                        src={img.url} 
+                        alt="ETER Bar" 
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                       <Camera className="w-12 h-12 text-white/80" />
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Dots Indicator */}
@@ -459,12 +466,25 @@ const LandingPage: React.FC = () => {
           >
             <XCircle className="w-8 h-8 md:w-10 md:h-10" />
           </button>
-          <img 
-            src={selectedGalleryImage} 
-            alt="ETER Bar Gallery" 
-            className="max-w-full max-h-[90vh] object-contain rounded-sm border border-white/10 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
+          
+          {selectedGalleryImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+            <video 
+              src={selectedGalleryImage} 
+              className="max-w-full max-h-[90vh] object-contain rounded-sm border border-white/10 shadow-2xl" 
+              controls 
+              autoPlay 
+              muted
+              playsInline 
+              onClick={(e) => e.stopPropagation()} 
+            />
+          ) : (
+            <img 
+              src={selectedGalleryImage} 
+              alt="ETER Bar Gallery" 
+              className="max-w-full max-h-[90vh] object-contain rounded-sm border border-white/10 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
         </div>
       )}
     </div>

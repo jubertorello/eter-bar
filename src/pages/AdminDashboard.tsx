@@ -60,6 +60,11 @@ const AdminDashboard: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 5 * 1024 * 1024) {
+      alert("La imagen es demasiado grande. Máximo 5MB");
+      return;
+    }
+
     if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
       alert("Faltan credenciales de Cloudinary en .env.local");
       return;
@@ -172,6 +177,14 @@ const AdminDashboard: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const isVideo = file.type.startsWith('video/');
+    const maxSize = isVideo ? 20 * 1024 * 1024 : 5 * 1024 * 1024;
+    
+    if (file.size > maxSize) {
+      showToast(`El archivo es demasiado grande. Máximo ${isVideo ? '20MB para videos' : '5MB para fotos'}`, 'error');
+      return;
+    }
+
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -179,13 +192,13 @@ const AdminDashboard: React.FC = () => {
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
         method: 'POST',
         body: formData,
       });
       const data = await res.json();
       if (data.secure_url) {
-        const optimizedUrl = data.secure_url.replace('/upload/', '/upload/f_webp,q_auto/');
+        const optimizedUrl = data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
         await addGalleryImage({
           id: 'g' + Date.now(),
           url: optimizedUrl
@@ -618,7 +631,7 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center gap-4">
                 <input 
                   type="file" 
-                  accept="image/*" 
+                  accept="image/*,video/*" 
                   onChange={handleGalleryUpload} 
                   disabled={isUploading}
                   className="text-sm file:mr-4 file:py-3 file:px-6 file:rounded-sm file:border-0 file:text-sm file:font-bold file:uppercase file:tracking-wider file:bg-red-600 file:text-black hover:file:bg-red-700 disabled:opacity-50"
@@ -628,10 +641,16 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {state.gallery.map(img => (
-                <div key={img.id} className="relative group aspect-square rounded-sm overflow-hidden bg-white/5 border border-white/10">
-                  <img src={img.url} alt="Gallery item" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              {state.gallery.map(img => {
+                const isVideo = img.url.match(/\.(mp4|webm|ogg|mov)$/i);
+                return (
+                  <div key={img.id} className="relative group aspect-square rounded-sm overflow-hidden bg-white/5 border border-white/10">
+                    {isVideo ? (
+                      <video src={img.url} className="w-full h-full object-cover" muted loop playsInline autoPlay />
+                    ) : (
+                      <img src={img.url} alt="Gallery item" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button 
                       onClick={() => handleDeleteGallery(img.id)}
                       className="bg-red-600 text-white p-3 rounded-full hover:bg-red-700 transition-transform hover:scale-110"
@@ -641,7 +660,8 @@ const AdminDashboard: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               {state.gallery.length === 0 && (
                 <div className="col-span-full py-12 text-center text-gray-500 border border-dashed border-white/20 rounded-sm">
                   No hay imágenes en la galería todavía.
