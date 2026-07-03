@@ -109,7 +109,7 @@ const LandingPage: React.FC = () => {
       </div>
 
       {/* Hero Section */}
-      <header className="relative h-[90vh] flex flex-col items-center justify-end text-center px-4 z-10 overflow-hidden pb-10 bg-black">
+      <header className="relative h-[90vh] flex flex-col items-center justify-end text-center px-4 z-10 overflow-hidden pb-10 bg-[#050000]">
         
         {/* Background Video */}
         <div className="absolute inset-0 z-0 flex items-center justify-center">
@@ -118,12 +118,12 @@ const LandingPage: React.FC = () => {
             loop
             muted
             playsInline
-            className="w-full h-full object-contain md:object-cover"
+            className="w-full h-full object-contain"
           >
-            <source src="https://res.cloudinary.com/djqtkbyez/video/upload/v1783014037/PixVerse_V6_Image_Text_360P_que_las_letras_apa_zzlhxz.mp4" type="video/mp4" />
+            <source src="https://res.cloudinary.com/djqtkbyez/video/upload/v1783077095/PixVerse_V6_Image_Text_360P_que_las_letras_apa_2_ihlgqv.mp4" type="video/mp4" />
           </video>
           {/* Gradiente para transición suave hacia el contenido inferior */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050000]/90"></div>
         </div>
 
         <div 
