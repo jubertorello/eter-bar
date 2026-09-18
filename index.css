@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  background-color: #050000;
+  color: white;
+  font-family: 'Space Grotesk', sans-serif;
+  overflow-x: hidden;
+}
+.font-syncopate {
+  font-family: 'Syncopate', sans-serif;
+}
+.bg-nebula {
+  background: radial-gradient(circle at center, #300000 0%, #050000 100%);
+}
+.text-neon-red {
+  text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 20px #ff0000;
+}
+.border-neon-red {
+  box-shadow: 0 0 5px #ff0000, inset 0 0 5px #ff0000;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #050000;
+}
+::-webkit-scrollbar-thumb {
+  background: #4a0000;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff0000;
+}

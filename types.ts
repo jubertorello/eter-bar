@@ -6,6 +6,7 @@ export interface DrinkItem {
   price: string;
   category: string;
   image?: string;
+  created_at?: string;
 }
 
 export interface OpeningHour {

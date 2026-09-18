@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './src/context/AppContext';
 import LandingPage from './src/pages/LandingPage';
-import AdminDashboard from './src/pages/AdminDashboard';
+
+// El panel se carga aparte para que los visitantes de la landing no descarguen su código.
+const AdminDashboard = lazy(() => import('./src/pages/AdminDashboard'));
 
 const App: React.FC = () => {
   return (
@@ -10,7 +12,14 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={<div className="min-h-screen bg-[#050000]" />}>
+                <AdminDashboard />
+              </Suspense>
+            }
+          />
         </Routes>
       </Router>
     </AppProvider>

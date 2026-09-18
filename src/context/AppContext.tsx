@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 interface AppState {
   menuItems: DrinkItem[];
   promos: Promo[];
-  promos: Promo[];
   gallery: GalleryImage[];
   categories: string[];
   banner: BannerData;
@@ -21,7 +20,6 @@ interface AppContextType {
   updatePromo: (id: string, promo: Partial<Promo>) => Promise<void>;
   deletePromo: (id: string) => Promise<void>;
   updateBanner: (banner: BannerData) => Promise<void>;
-  updateCategories: (categories: string[]) => Promise<void>;
   updateCategories: (categories: string[]) => Promise<void>;
   moveDrink: (id: string, direction: 'up' | 'down') => Promise<void>;
   addGalleryImage: (image: GalleryImage) => Promise<void>;
@@ -144,49 +142,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const moveDrink = async (id: string, direction: 'up' | 'down') => {
-    // For a real production app, order should be stored in DB.
-    // For simplicity here, we swap created_at timestamps to reorder, or we just do it locally.
-    // Let's do it locally and then maybe in a future update to DB order.
-    // Actually, to make it persistent, we need an order field. Since we don't have one, we can just update local state.
-    // But since it re-fetches on reload by created_at, reordering won't persist unless we have an order field.
-    alert("La reordenación manual requiere un campo de orden en la BD. Por ahora sólo es visual en esta sesión.");
-    setState(prev => {
-      const items = [...prev.menuItems];
-      const index = items.findIndex(item => item.id === id);
-      if (index === -1) return prev;
+    // El menú se ordena por created_at, así que intercambiamos las fechas de los dos tragos
+    // para que el nuevo orden persista sin necesitar una columna extra en la BD.
+    const items = state.menuItems;
+    const current = items.find(i => i.id === id);
+    if (!current) return;
+    const categoryItems = items.filter(i => i.category === current.category);
+    const catIndex = categoryItems.findIndex(i => i.id === id);
+    const neighbor = categoryItems[direction === 'up' ? catIndex - 1 : catIndex + 1];
+    if (!neighbor || !current.created_at || !neighbor.created_at) return;
 
-      const currentItem = items[index];
-      const categoryItems = items.filter(i => i.category === currentItem.category);
-      const catIndex = categoryItems.findIndex(i => i.id === id);
-      
-      if (direction === 'up' && catIndex > 0) {
-        const swapItem = categoryItems[catIndex - 1];
-        const swapIndex = items.findIndex(i => i.id === swapItem.id);
-        items[index] = swapItem;
-        items[swapIndex] = currentItem;
-      } else if (direction === 'down' && catIndex < categoryItems.length - 1) {
-        const swapItem = categoryItems[catIndex + 1];
-        const swapIndex = items.findIndex(i => i.id === swapItem.id);
-        items[index] = swapItem;
-        items[swapIndex] = currentItem;
-      }
-      
-      return { ...prev, menuItems: items };
+    const [a, b] = await Promise.all([
+      supabase.from('eter_menu_items').update({ created_at: neighbor.created_at }).eq('id', current.id),
+      supabase.from('eter_menu_items').update({ created_at: current.created_at }).eq('id', neighbor.id),
+    ]);
+    if (a.error || b.error) throw a.error || b.error;
+
+    setState(prev => {
+      const next = [...prev.menuItems];
+      const i = next.findIndex(item => item.id === current.id);
+      const j = next.findIndex(item => item.id === neighbor.id);
+      if (i === -1 || j === -1) return prev;
+      next[i] = { ...neighbor, created_at: current.created_at };
+      next[j] = { ...current, created_at: neighbor.created_at };
+      return { ...prev, menuItems: next };
     });
   };
 
   const updateBanner = async (banner: BannerData) => {
     const { error } = await supabase.from('eter_settings').upsert({ key: 'banner', value: banner });
-    if (!error) {
-      setState(prev => ({ ...prev, banner }));
-    }
+    if (error) throw error;
+    setState(prev => ({ ...prev, banner }));
   };
 
   const updateCategories = async (categories: string[]) => {
     const { error } = await supabase.from('eter_settings').upsert({ key: 'categories', value: categories });
-    if (!error) {
-      setState(prev => ({ ...prev, categories }));
-    }
+    if (error) throw error;
+    setState(prev => ({ ...prev, categories }));
   };
 
   const addGalleryImage = async (image: GalleryImage) => {

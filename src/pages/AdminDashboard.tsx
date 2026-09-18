@@ -7,8 +7,28 @@ import { DrinkItem, Promo } from '../../types';
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 20 * 1024 * 1024;
+
+// Sube un archivo a Cloudinary y devuelve la URL optimizada con la transformación indicada.
+const uploadToCloudinary = async (file: File, resourceType: 'image' | 'auto', transformation: string) => {
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+    throw new Error('Faltan credenciales de Cloudinary en .env.local');
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+  const data = await res.json();
+  if (!data.secure_url) throw new Error('Cloudinary no devolvió una URL');
+  return (data.secure_url as string).replace('/upload/', `/upload/${transformation}/`);
+};
+
 const AdminDashboard: React.FC = () => {
-  const { state, addDrink, updateDrink, deleteDrink, addPromo, updatePromo, deletePromo, updateCategories, moveDrink, addGalleryImage, deleteGalleryImage } = useAppContext();
+  const { state, addDrink, updateDrink, deleteDrink, addPromo, updatePromo, deletePromo, moveDrink, addGalleryImage, deleteGalleryImage } = useAppContext();
   const [activeTab, setActiveTab] = useState<'tragos' | 'promos' | 'galeria'>('tragos');
   
   // Toast notifications
@@ -56,42 +76,36 @@ const AdminDashboard: React.FC = () => {
   const [drinkSearch, setDrinkSearch] = useState('');
   const [isDrinkFormOpen, setIsDrinkFormOpen] = useState(false);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Si las categorías de la BD cargan después, evitamos que el formulario quede con una
+  // categoría inexistente (el trago se guardaría pero no aparecería en la web).
+  useEffect(() => {
+    setDrinkForm(prev =>
+      prev.category && state.categories.includes(prev.category) ? prev : { ...prev, category: state.categories[0] }
+    );
+  }, [state.categories]);
+
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onUploaded: (url: string) => void
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("La imagen es demasiado grande. Máximo 5MB");
-      return;
-    }
-
-    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
-      alert("Faltan credenciales de Cloudinary en .env.local");
+    if (file.size > MAX_IMAGE_SIZE) {
+      showToast('La imagen es demasiado grande. Máximo 5MB', 'error');
+      e.target.value = '';
       return;
     }
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.secure_url) {
-        const optimizedUrl = data.secure_url.replace('/upload/', '/upload/f_webp,q_auto/');
-        setDrinkForm(prev => ({ ...prev, image: optimizedUrl }));
-      } else {
-        alert("Error al subir imagen");
-      }
+      onUploaded(await uploadToCloudinary(file, 'image', 'f_webp,q_auto'));
     } catch (error) {
       console.error(error);
-      alert("Error al subir imagen");
+      showToast('Error al subir imagen', 'error');
     } finally {
       setIsUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -178,7 +192,7 @@ const AdminDashboard: React.FC = () => {
     if (!file) return;
 
     const isVideo = file.type.startsWith('video/');
-    const maxSize = isVideo ? 20 * 1024 * 1024 : 5 * 1024 * 1024;
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
     
     if (file.size > maxSize) {
       showToast(`El archivo es demasiado grande. Máximo ${isVideo ? '20MB para videos' : '5MB para fotos'}`, 'error');
@@ -186,32 +200,24 @@ const AdminDashboard: React.FC = () => {
     }
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '');
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.secure_url) {
-        const optimizedUrl = data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
-        await addGalleryImage({
-          id: 'g' + Date.now(),
-          url: optimizedUrl
-        });
-        showToast('Imagen agregada a la galería');
-      } else {
-        throw new Error('No url returned');
-      }
+      const url = await uploadToCloudinary(file, 'auto', 'f_auto,q_auto');
+      await addGalleryImage({ id: 'g' + Date.now(), url });
+      showToast('Imagen agregada a la galería');
     } catch (err) {
+      console.error(err);
       showToast('Error al subir imagen a la galería', 'error');
     } finally {
       setIsUploading(false);
       e.target.value = ''; // Reset input
+    }
+  };
+
+  const handleMoveDrink = async (id: string, direction: 'up' | 'down') => {
+    try {
+      await moveDrink(id, direction);
+    } catch (err) {
+      showToast('Error al reordenar el trago', 'error');
     }
   };
 
@@ -365,7 +371,7 @@ const AdminDashboard: React.FC = () => {
                 <button 
                   onClick={() => {
                     setIsDrinkFormOpen(!isDrinkFormOpen);
-                    if (isDrinkFormOpen) { setEditingDrink(null); setDrinkForm({ name: '', description: '', price: '', category: state.categories[0] }); }
+                    if (isDrinkFormOpen) { setEditingDrink(null); setDrinkForm({ name: '', description: '', price: '', category: state.categories[0], image: '' }); }
                   }}
                   className="w-full flex justify-between items-center text-xl font-bold"
                 >
@@ -403,7 +409,7 @@ const AdminDashboard: React.FC = () => {
                       <input 
                         type="file" 
                         accept="image/*" 
-                        onChange={handleImageUpload} 
+                        onChange={e => handleImageUpload(e, url => setDrinkForm(prev => ({ ...prev, image: url })))} 
                         disabled={isUploading}
                         className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20"
                       />
@@ -427,7 +433,7 @@ const AdminDashboard: React.FC = () => {
                       {editingDrink ? 'Guardar Cambios' : 'Crear Trago'}
                     </button>
                     {editingDrink && (
-                      <button type="button" onClick={() => { setEditingDrink(null); setDrinkForm({ name: '', description: '', price: '', category: state.categories[0] }); setIsDrinkFormOpen(false); }} className="bg-white/10 hover:bg-white/20 p-3 rounded-sm">
+                      <button type="button" onClick={() => { setEditingDrink(null); setDrinkForm({ name: '', description: '', price: '', category: state.categories[0], image: '' }); setIsDrinkFormOpen(false); }} className="bg-white/10 hover:bg-white/20 p-3 rounded-sm">
                         Cancelar
                       </button>
                     )}
@@ -478,13 +484,13 @@ const AdminDashboard: React.FC = () => {
                               </div>
                             </div>
                             <div className="flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity self-end md:self-auto shrink-0">
-                              {index > 0 && (
-                                <button onClick={() => moveDrink(item.id, 'up')} className="p-2 bg-white/5 hover:bg-white/10 rounded-sm text-gray-400 transition-colors" title="Subir">
+                              {!drinkSearch && index > 0 && (
+                                <button onClick={() => handleMoveDrink(item.id, 'up')} className="p-2 bg-white/5 hover:bg-white/10 rounded-sm text-gray-400 transition-colors" title="Subir">
                                   <ChevronUp className="w-4 h-4" />
                                 </button>
                               )}
-                              {index < itemsInCategory.length - 1 && (
-                                <button onClick={() => moveDrink(item.id, 'down')} className="p-2 bg-white/5 hover:bg-white/10 rounded-sm text-gray-400 transition-colors" title="Bajar">
+                              {!drinkSearch && index < itemsInCategory.length - 1 && (
+                                <button onClick={() => handleMoveDrink(item.id, 'down')} className="p-2 bg-white/5 hover:bg-white/10 rounded-sm text-gray-400 transition-colors" title="Bajar">
                                   <ChevronDown className="w-4 h-4" />
                                 </button>
                               )}
@@ -547,10 +553,32 @@ const AdminDashboard: React.FC = () => {
                     <input required value={promoForm.day} onChange={e => setPromoForm({...promoForm, day: e.target.value})} className="w-full bg-black border border-white/20 p-3 rounded-sm focus:border-red-600 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">URL de Imagen (Opcional)</label>
-                    <div className="flex gap-2 items-center">
-                      <ImageIcon className="text-gray-500 w-5 h-5" />
-                      <input value={promoForm.image} onChange={e => setPromoForm({...promoForm, image: e.target.value})} className="w-full bg-black border border-white/20 p-3 rounded-sm focus:border-red-600 outline-none" placeholder="https://..." />
+                    <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">Imagen (Opcional)</label>
+                    <div className="flex flex-col gap-3">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => handleImageUpload(e, url => setPromoForm(prev => ({ ...prev, image: url })))}
+                        disabled={isUploading}
+                        className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20"
+                      />
+                      {isUploading && <span className="text-xs text-yellow-500">Subiendo...</span>}
+                      <div className="flex gap-2 items-center">
+                        <ImageIcon className="text-gray-500 w-5 h-5 shrink-0" />
+                        <input value={promoForm.image} onChange={e => setPromoForm({...promoForm, image: e.target.value})} className="w-full bg-black border border-white/20 p-3 rounded-sm focus:border-red-600 outline-none" placeholder="o pegá una URL: https://..." />
+                      </div>
+                      {promoForm.image && (
+                        <div className="relative w-24 h-24">
+                          <img src={promoForm.image} alt="Preview" className="w-full h-full object-cover rounded-sm border border-white/20" />
+                          <button
+                            type="button"
+                            onClick={() => setPromoForm(prev => ({ ...prev, image: '' }))}
+                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-black border border-white/10 rounded-sm">

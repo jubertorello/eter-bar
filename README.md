@@ -1,20 +1,24 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# ETER Bar
 
-# Run and deploy your AI Studio app
+Landing page del bar ETER (menú, promos, galería, horarios) con un panel de administración en `/admin`.
 
-This contains everything you need to run your app locally.
+**Stack:** React 19 + Vite + Tailwind CSS 3, datos en Supabase e imágenes/videos en Cloudinary. Deploy en Vercel.
 
-View your app in AI Studio: https://ai.studio/apps/drive/17g9Fex7htB1i4noNnJIheKBiK6Hsyjck
+## Desarrollo local
 
-## Run Locally
+1. `npm install`
+2. Crear `.env.local` con:
+   ```
+   VITE_SUPABASE_URL=...
+   VITE_SUPABASE_ANON_KEY=...
+   VITE_CLOUDINARY_CLOUD_NAME=...
+   VITE_CLOUDINARY_UPLOAD_PRESET=...
+   ```
+3. `npm run dev` (http://localhost:3000)
 
-**Prerequisites:**  Node.js
+## Estructura
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- `src/pages/LandingPage.tsx` — web pública
+- `src/pages/AdminDashboard.tsx` — gestión de tragos, promos y galería
+- `src/context/AppContext.tsx` — estado y acceso a Supabase (`eter_menu_items`, `eter_promos`, `eter_gallery`, `eter_settings`)
+- `constants.ts` — horarios, WiFi, ubicación y contacto

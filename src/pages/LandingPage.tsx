@@ -22,12 +22,27 @@ import { OPENING_HOURS, WIFI_DATA, LOCATION_DATA, CONTACT_DATA } from '../../con
 import { useAppContext } from '../context/AppContext';
 import { DrinkItem } from '../../types';
 
+// Se generan una sola vez: si se calculan en el render, las estrellas saltan en cada re-render
+// (por ejemplo, cada vez que avanza el carrusel de la galería).
+const STARS = Array.from({ length: 50 }, () => ({
+  top: `${Math.random() * 100}%`,
+  left: `${Math.random() * 100}%`,
+  width: `${Math.random() * 2}px`,
+  height: `${Math.random() * 2}px`,
+  animationDelay: `${Math.random() * 5}s`,
+  animationDuration: `${Math.random() * 3 + 2}s`
+}));
+
 const LandingPage: React.FC = () => {
   const { state } = useAppContext();
   const { menuItems, promos, categories, gallery } = state;
   const [selectedImage, setSelectedImage] = useState<DrinkItem | null>(null);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentGalleryIndex >= gallery.length) setCurrentGalleryIndex(0);
+  }, [gallery.length, currentGalleryIndex]);
 
   useEffect(() => {
     if (gallery.length <= 1) return;
@@ -92,18 +107,11 @@ const LandingPage: React.FC = () => {
 
       {/* Background stars effect */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
-        {[...Array(50)].map((_, i) => (
+        {STARS.map((style, i) => (
           <div
             key={i}
             className="absolute rounded-full bg-white animate-pulse"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              width: `${Math.random() * 2}px`,
-              height: `${Math.random() * 2}px`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${Math.random() * 3 + 2}s`
-            }}
+            style={style}
           />
         ))}
       </div>
@@ -120,7 +128,7 @@ const LandingPage: React.FC = () => {
             playsInline
             className="w-full h-full object-contain"
           >
-            <source src="https://res.cloudinary.com/djqtkbyez/video/upload/v1783077095/PixVerse_V6_Image_Text_360P_que_las_letras_apa_2_ihlgqv.mp4" type="video/mp4" />
+            <source src="https://res.cloudinary.com/scihumn2/video/upload/v1789752708/eter_hero_video.mp4" type="video/mp4" />
           </video>
           {/* Gradiente para transición suave hacia el contenido inferior */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050000]/90"></div>
@@ -456,7 +464,7 @@ const LandingPage: React.FC = () => {
       <footer className="pt-8 pb-16 px-4 border-t border-white/5 text-center z-10 relative bg-black">
         <div className="mb-12 flex flex-col items-center">
           <img
-            src="https://res.cloudinary.com/djqtkbyez/image/upload/v1783016155/WhatsApp_Image_2026-07-02_at_19.36.02_bhmcck.jpg"
+            src="https://res.cloudinary.com/scihumn2/image/upload/v1789752702/eter_logo.jpg"
             alt="ETER Logo"
             className="w-48 md:w-64 h-auto object-contain mb-4 drop-shadow-xl rounded-full"
           />
