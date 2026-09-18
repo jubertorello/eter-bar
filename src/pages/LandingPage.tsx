@@ -16,11 +16,15 @@ import {
   X,
   XCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Copy,
+  Check
 } from 'lucide-react';
 import { OPENING_HOURS, WIFI_DATA, LOCATION_DATA, CONTACT_DATA } from '../../constants';
 import { useAppContext } from '../context/AppContext';
 import { DrinkItem } from '../../types';
+import SongSuggestion from '../components/SongSuggestion';
+import Modal from '../components/Modal';
 
 // Se generan una sola vez: si se calculan en el render, las estrellas saltan en cada re-render
 // (por ejemplo, cada vez que avanza el carrusel de la galería).
@@ -39,6 +43,28 @@ const LandingPage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<DrinkItem | null>(null);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0);
+  const [isWifiOpen, setIsWifiOpen] = useState(false);
+  const [isSongOpen, setIsSongOpen] = useState(false);
+  const [wifiCopied, setWifiCopied] = useState(false);
+
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
+  const copyWifiPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(WIFI_DATA.pass);
+      setWifiCopied(true);
+      setTimeout(() => setWifiCopied(false), 2000);
+    } catch {
+      // Sin permiso de portapapeles: la contraseña igual queda visible en pantalla
+    }
+  };
+
+  const quickLinks = [
+    ...(promos.length > 0 ? [{ label: 'Promos', icon: Zap, onClick: () => scrollTo('promo') }] : []),
+    { label: 'Menú', icon: Wine, onClick: () => scrollTo('menu') },
+    { label: 'Pedí música', icon: Music, onClick: () => setIsSongOpen(true) },
+    { label: 'WiFi', icon: Wifi, onClick: () => setIsWifiOpen(true) },
+  ];
 
   useEffect(() => {
     if (currentGalleryIndex >= gallery.length) setCurrentGalleryIndex(0);
@@ -105,6 +131,25 @@ const LandingPage: React.FC = () => {
         </div>
       )}
 
+      {/* WiFi Modal */}
+      <Modal open={isWifiOpen} onClose={() => setIsWifiOpen(false)} label="Datos del WiFi">
+        <Wifi className="w-10 h-10 text-red-600 mx-auto mb-6" />
+        <p className="text-red-600 text-xs font-bold tracking-[0.3em] mb-2 uppercase">Red WiFi</p>
+        <p className="text-xl font-mono text-white mb-6 break-all">{WIFI_DATA.ssid}</p>
+        <p className="text-red-600 text-xs font-bold tracking-[0.3em] mb-2 uppercase">Contraseña</p>
+        <p className="text-xl font-mono text-white mb-8 break-all">{WIFI_DATA.pass}</p>
+        <button
+          onClick={copyWifiPassword}
+          className="w-full inline-flex items-center justify-center gap-2 py-3 bg-red-600 hover:bg-white text-black font-bold uppercase tracking-widest text-sm rounded-sm transition-colors"
+        >
+          {wifiCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          {wifiCopied ? '¡Copiada!' : 'Copiar contraseña'}
+        </button>
+      </Modal>
+
+      {/* Song Suggestion Modal */}
+      <SongSuggestion open={isSongOpen} onClose={() => setIsSongOpen(false)} />
+
       {/* Background stars effect */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
         {STARS.map((style, i) => (
@@ -117,26 +162,43 @@ const LandingPage: React.FC = () => {
       </div>
 
       {/* Hero Section */}
-      <header className="relative h-[90vh] flex flex-col items-center justify-end text-center px-4 z-10 overflow-hidden pb-10 bg-[#050000]">
+      <header className="relative flex flex-col items-center text-center pb-6 z-10 overflow-hidden bg-[#050000]">
 
-        {/* Background Video */}
-        <div className="absolute inset-0 z-0 flex items-center justify-center">
+        {/* Video cuadrado: ocupa el ancho en celular y hasta ~66% del alto en pantallas anchas.
+            La máscara radial funde los bordes con el fondo (y oculta la marca de agua de la esquina). */}
+        <div className="relative w-full max-w-[min(100%,66svh)] aspect-square shrink-0 -mb-6 sm:-mb-10">
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
+            style={{
+              maskImage: 'radial-gradient(closest-side, black 72%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(closest-side, black 72%, transparent 100%)',
+            }}
           >
             <source src="https://res.cloudinary.com/scihumn2/video/upload/v1789752708/eter_hero_video.mp4" type="video/mp4" />
           </video>
-          {/* Gradiente para transición suave hacia el contenido inferior */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050000]/90"></div>
         </div>
+
+        {/* Accesos rápidos */}
+        <nav className="relative z-10 grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-3 w-full max-w-md sm:max-w-none px-4 mb-8">
+          {quickLinks.map(({ label, icon: Icon, onClick }) => (
+            <button
+              key={label}
+              onClick={onClick}
+              className="flex items-center justify-center gap-2 px-5 py-3 bg-black/60 backdrop-blur-sm border border-red-600/50 hover:border-red-600 hover:bg-red-600 hover:text-black text-white font-bold uppercase tracking-widest text-xs rounded-sm transition-colors group/cta"
+            >
+              <Icon className="w-4 h-4 text-red-600 group-hover/cta:text-black transition-colors" />
+              {label}
+            </button>
+          ))}
+        </nav>
 
         <div
           className="relative z-10 flex flex-col items-center gap-3 cursor-pointer group mb-4"
-          onClick={() => document.getElementById('promo')?.scrollIntoView({ behavior: 'smooth' })}
+          onClick={() => scrollTo(promos.length > 0 ? 'promo' : 'menu')}
         >
           <p className="text-xs md:text-sm font-light tracking-[0.3em] uppercase text-gray-300 group-hover:text-white transition-colors text-center">
             Desliza para ver más
